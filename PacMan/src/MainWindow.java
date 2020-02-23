@@ -11,7 +11,7 @@ import javax.swing.*;
 
 /*
  * TO-DO
- * - Fix direction changing
+ * - Fix direction changing  ----> Generalize code for all directions
  * - Add enemies
  * - Add health 
  */
@@ -45,8 +45,7 @@ public class MainWindow extends JFrame{
 			new Collider(9, 7, 3, 1) {}, //vertical right 2
 			new Collider(2, 9, 2, 2) {}, //vertical right 2
 			new Collider(9, 9, 2, 2) {}, //vertical right 2
-			new Collider(5, 7, 1, 1) {}, //vertical right 2
-			new Collider(7, 7, 1, 1) {}, //vertical right 2
+			new Collider(5, 7, 3, 1) {}, //vertical right 2
 	};
 	Icon playerSprites[] = {new ImageIcon(getClass().getResource("player.png"))};
 	Icon background = new ImageIcon(getClass().getResource("background.png"));
@@ -59,13 +58,12 @@ public class MainWindow extends JFrame{
 		
 		addWalls();
 		
-		player = new Player(1, 1, 1, 1, 7, playerSprites);
+		player = new Player(1, 11, 1, 1, 4, playerSprites);
 
 		backgroundLabel = new JLabel(background);
 		playerImage = new JLabel(player.sprites[0]);
 		
 		add(playerImage);
-		//add(backgroundLabel);
 		
 		playerImage.setBounds(player.x, player.y, player.height, player.width);
 		gameCycle();
@@ -94,14 +92,16 @@ public class MainWindow extends JFrame{
 		int i = -1;
 		do{
 			i++;
-			panel.paintedWalls.add(new Wall(walls[i].x, walls[i].y, walls[i].width, walls[i].height));
+			panel.paintedWalls.add(new Wall(walls[i].x, walls[i].y, walls[i].width-1, walls[i].height-1));
 		}while(i != walls.length-1);
 	}
 	
 
 	
 	public class Panel extends JPanel{
+		Graphics g;
 		ArrayList<Wall> paintedWalls = new ArrayList<>();
+		ArrayList<Wall> points = new ArrayList<>();
 		public Panel(){
 			setBackground(Color.BLACK);
 		}
@@ -118,6 +118,17 @@ public class MainWindow extends JFrame{
 					g2.draw(paintedWalls.get(i));
 				}while(i != paintedWalls.size() - 1);
 			}
+			
+			g2.setPaint(Color.BLACK);
+			
+			if(points.size() > 0){
+				int i = -1;
+				do{
+					i++;
+					g2.fill(points.get(i));
+					g2.draw(points.get(i));
+				}while(i != points.size() - 1);
+			}
 		}
 	}
 	
@@ -127,11 +138,35 @@ public class MainWindow extends JFrame{
 			switch (e.getKeyCode()) {
 				case KeyEvent.VK_RIGHT:
 					if(pressed == 0){
-						player.direction[0] = 1;
-						player.direction[1] = 0;
+						Boolean canTurn = true;
+						if(player.direction[1] != 0){
+							//Check if Player can turn after N pixels
+							for(int j = 0; j != 5; j++){
+								canTurn = true;
+								for(int i = 0; i != walls.length; i++){
+									Collider temp = new Collider(
+											player.x + player.width + 5, 
+											player.y + (player.height/2) + j*player.direction[1],
+											1,
+											1, 1);
+									if(temp.isColliding(walls[i])){
+										canTurn = false;
+									}
+								}
+								if(canTurn){
+									player.willTurn = 2;
+								}
+							}
+						}
+						if(player.willTurn == 0){
+							player.direction[0] = 1;
+							player.direction[1] = 0;
+						}
 						pressed = 1;
 					}
 					break;
+					
+					
 				case KeyEvent.VK_LEFT:
 					if(pressed == 0){
 						player.direction[0] = -1;

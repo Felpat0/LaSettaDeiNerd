@@ -10,10 +10,10 @@ public class Collider {
 	int y;
 	
 	public Collider(int x, int y, int w, int h){
-		width = (w * 56) -1;
-		height = (h * 56) -1;
-		this.x = x * 56;
-		this.y = y * 56;
+		width = (w * 56);
+		height = (h * 56);
+		this.x = (x * 56);
+		this.y = (y * 56);
 	}
 	
 	public Collider(int x, int y, int w, int h, int t){
@@ -26,12 +26,14 @@ public class Collider {
 	
 	Boolean isColliding(Collider a){
 		//First check if x coordinates match
-		if((a.x < this.x + this.width && a.x > this.x || a.x + a.width < this.x + this.width && a.x + a.width > this.x) || (this.x < a.x + a.width && this.x > a.x || this.x + this.width < a.x + a.width && this.x + this.width > a.x)){
+		if((a.x <= this.x + this.width && a.x >= this.x || a.x + a.width <= this.x + this.width && a.x + a.width >= this.x) || (this.x <= a.x + a.width && this.x >= a.x || this.x + this.width <= a.x + a.width && this.x + this.width >= a.x)){
 			//Then if y coordinates match
-			if((a.y < this.y + this.height && a.y > this.y || a.y + a.height < this.y + this.height && a.y + a.height > this.y) || (this.y < a.y + a.height && this.y > a.y || this.y + this.height < a.y + a.height && this.y + this.height > a.y)){
+			if((a.y <= this.y + this.height && a.y >= this.y || a.y + a.height <= this.y + this.height && a.y + a.height >= this.y) || (this.y <= a.y + a.height && this.y >= a.y || this.y + this.height <= a.y + a.height && this.y + this.height >= a.y)){
 				return true;
 			}
 		}
+		
+		
 		return false;
 	}
 	
