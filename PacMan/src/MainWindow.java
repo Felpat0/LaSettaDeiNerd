@@ -133,59 +133,33 @@ public class MainWindow extends JFrame{
 	}
 	
 	private class Listener1 extends KeyAdapter{
-		int pressed = 0; //0=none 1=right 2=left 3=up 4=down
+		int pressed = 0; //0=none 1=left 2=right 3=up 4=down
 		public void keyPressed(KeyEvent e){
 			switch (e.getKeyCode()) {
+				case KeyEvent.VK_LEFT:
+				if(pressed == 0){
+					pressed = 1;
+					player.checkAndMove(walls, pressed);
+					break;
+				}
+				
 				case KeyEvent.VK_RIGHT:
 					if(pressed == 0){
-						Boolean canTurn = true;
-						if(player.direction[1] != 0){
-							//Check if Player can turn after N pixels
-							for(int j = 0; j != 5; j++){
-								canTurn = true;
-								for(int i = 0; i != walls.length; i++){
-									Collider temp = new Collider(
-											player.x + player.width + 5, 
-											player.y + (player.height/2) + j*player.direction[1],
-											1,
-											1, 1);
-									if(temp.isColliding(walls[i])){
-										canTurn = false;
-									}
-								}
-								if(canTurn){
-									player.willTurn = 2;
-								}
-							}
-						}
-						if(player.willTurn == 0){
-							player.direction[0] = 1;
-							player.direction[1] = 0;
-						}
-						pressed = 1;
+						pressed = 2;
+						player.checkAndMove(walls, pressed);
 					}
 					break;
 					
-					
-				case KeyEvent.VK_LEFT:
-					if(pressed == 0){
-						player.direction[0] = -1;
-						player.direction[1] = 0;
-						pressed = 2;
-						break;
-					}
 				case KeyEvent.VK_UP:
 					if(pressed == 0){
-						player.direction[0] = 0;
-						player.direction[1] = -1;
 						pressed = 3;
+						player.checkAndMove(walls, pressed);
 						break;
 					}
 				case KeyEvent.VK_DOWN:
 					if(pressed == 0){
-						player.direction[0] = 0;
-						player.direction[1] = 1;
 						pressed = 4;
+						player.checkAndMove(walls, pressed);
 						break;
 					}
 			}

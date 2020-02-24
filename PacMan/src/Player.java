@@ -17,7 +17,7 @@ public class Player extends Collider{
 		Boolean canTurn = true;
 		for(int i = 0; i != walls.length; i++){
 			
-			//Predict if player will collide
+			//Predict if this will collide
 			if(new Collider(x + this.direction[0] * this.speed, y + this.direction[1] * this.speed, width, height, 1).isColliding(walls[i])){
 				
 				if(this.x == walls[i].x - this.width || this.x == walls[i].x + walls[i].width || this.y == walls[i].y - this.height || this.y == walls[i].y + walls[i].height){
@@ -74,5 +74,49 @@ public class Player extends Collider{
 		}		
 		
 	}
-
+	
+	public void checkAndMove(Collider[] walls, int pressed){ //0=none 1=left 2=right 3=up 4=down
+		Boolean canTurn = true;
+		if(this.direction[1] != 0){
+			//Check if Player can turn after N pixels
+			for(int j = 0; j != 5; j++){
+				canTurn = true;
+				for(int i = 0; i != walls.length; i++){
+					Collider temp = new Collider(
+							this.x + this.width + 5, 
+							this.y + (this.height/2) + j*this.direction[1],
+							1,
+							1, 1);
+					if(temp.isColliding(walls[i])){
+						canTurn = false;
+					}
+				}
+				if(canTurn){
+					this.willTurn = pressed;
+				}
+			}
+		}
+		if(this.willTurn == 0){
+			switch (pressed) {
+			case 1:
+				this.direction[0] = -1;
+				this.direction[1] = 0;
+				break;
+			case 2:
+				this.direction[0] = 1;
+				this.direction[1] = 0;
+				break;
+			case 3:
+				this.direction[0] = 0;
+				this.direction[1] = -1;
+				break;
+			case 4:
+				this.direction[0] = 0;
+				this.direction[1] = 1;
+				break;
+			default:
+				break;
+			}
+		}
+	}
 }
