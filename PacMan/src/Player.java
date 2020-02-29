@@ -79,7 +79,7 @@ public class Player extends Collider{
 		Boolean canTurn = true;
 		int tempX = 0;
 		int tempY = 0;
-		int tempDir = 0;
+		/*int tempDir = 0;
 		switch (pressed) {
 		case 1:
 			tempX = this.x + this.width - 5;
@@ -103,15 +103,25 @@ public class Player extends Collider{
 			break;
 		default:
 			break;
-		}
-		if(this.direction[1] != 0){
+		}*/
+		if(this.direction[1] != 0 || this.direction[0] != 0){
 			//Check if Player can turn after N pixels
 			for(int j = 0; j != 5; j++){
 				canTurn = true;
+				int n = 5;
+				int c = 5;
 				for(int i = 0; i != walls.length; i++){
+					if(this.direction[0] != 0){
+						n = j;
+						c = 5;
+					}else if(this.direction[1] != 0){
+						n = 5;
+						c = j;
+					}
 					Collider temp = new Collider(
-							tempX, 
-							tempY + j*this.direction[tempDir],
+							//To be fixed, use pressed instead of direction for some variables
+							this.x + (this.width/2) + ((this.width/2)*this.direction[0])+ (n*this.direction[0]), 
+							this.y + (this.height/2) + ((this.height/2)*this.direction[1])+ (c*this.direction[1]),
 							1,
 							1, 1);
 					if(temp.isColliding(walls[i])){
