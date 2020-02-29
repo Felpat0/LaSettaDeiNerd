@@ -77,14 +77,41 @@ public class Player extends Collider{
 	
 	public void checkAndMove(Collider[] walls, int pressed){ //0=none 1=left 2=right 3=up 4=down
 		Boolean canTurn = true;
+		int tempX = 0;
+		int tempY = 0;
+		int tempDir = 0;
+		switch (pressed) {
+		case 1:
+			tempX = this.x + this.width - 5;
+			tempY = this.y + (this.height/2);
+			tempDir = 1;
+			break;
+		case 2:
+			tempX = this.x + this.width + 5;
+			tempY = this.y + (this.height/2);
+			tempDir = 1;
+			break;
+		case 3:
+			tempX = this.x + this.width + 5;
+			tempY = this.y + (this.height/2);
+			tempDir = 0;
+			break;
+		case 4:
+			tempX = this.x + this.width + 5;
+			tempY = this.y + (this.height/2);
+			tempDir = 0;
+			break;
+		default:
+			break;
+		}
 		if(this.direction[1] != 0){
 			//Check if Player can turn after N pixels
 			for(int j = 0; j != 5; j++){
 				canTurn = true;
 				for(int i = 0; i != walls.length; i++){
 					Collider temp = new Collider(
-							this.x + this.width + 5, 
-							this.y + (this.height/2) + j*this.direction[1],
+							tempX, 
+							tempY + j*this.direction[tempDir],
 							1,
 							1, 1);
 					if(temp.isColliding(walls[i])){
