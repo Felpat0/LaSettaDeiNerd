@@ -140,8 +140,8 @@ public class MainWindow extends JFrame{
 				if(pressed == 0){
 					pressed = 1;
 					player.checkAndMove(walls, pressed);
-					break;
 				}
+				break;
 				
 				case KeyEvent.VK_RIGHT:
 					if(pressed == 0){
@@ -154,19 +154,19 @@ public class MainWindow extends JFrame{
 					if(pressed == 0){
 						pressed = 3;
 						player.checkAndMove(walls, pressed);
-						break;
 					}
+					break;
 				case KeyEvent.VK_DOWN:
 					if(pressed == 0){
 						pressed = 4;
 						player.checkAndMove(walls, pressed);
-						break;
 					}
+					break;
 			}
 		}
 		
 		public void keyReleased(KeyEvent e){
-			if((e.getKeyCode() == KeyEvent.VK_RIGHT && pressed == 1) || (e.getKeyCode() == KeyEvent.VK_LEFT && pressed == 2) || (e.getKeyCode() == KeyEvent.VK_UP && pressed == 3) || (e.getKeyCode() == KeyEvent.VK_DOWN && pressed == 4)){
+			if((e.getKeyCode() == KeyEvent.VK_RIGHT && pressed == 2 )|| (e.getKeyCode() == KeyEvent.VK_LEFT && pressed == 1) || (e.getKeyCode() == KeyEvent.VK_UP && pressed == 3) || (e.getKeyCode() == KeyEvent.VK_DOWN && pressed == 4)){
 				pressed = 0;
 			}
 		}
