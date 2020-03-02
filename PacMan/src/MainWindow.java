@@ -81,7 +81,7 @@ public class MainWindow extends JFrame{
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				player.move(walls);
+				player.move(walls, false);
 				playerImage.setBounds(player.x, player.y, player.height, player.width);
 			}
 		});

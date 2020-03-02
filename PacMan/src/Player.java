@@ -12,9 +12,8 @@ public class Player extends Collider{
 		this.willTurn = 0;
 	}
 	
-	public void move(Collider[] walls){
+	public void move(Collider[] walls, Boolean canTurn){
 		Boolean canMove = true;
-		Boolean canTurn = true;
 		for(int i = 0; i != walls.length; i++){
 			
 			//Predict if this will collide
@@ -68,8 +67,8 @@ public class Player extends Collider{
 			willTurn = 0;
 		}
 		if(canMove){
-			this.x += direction[0] * speed;
-			this.y += direction[1] * speed;
+			this.x += this.direction[0] * speed;
+			this.y += this.direction[1] * speed;
 		}		
 		
 	}
@@ -146,7 +145,8 @@ public class Player extends Collider{
 						turnPoint = j;
 				}
 			}
-			this.x += turnPoint + this.speed;
+			this.x += turnPoint + this.speed*this.direction[0];
+			this.y += turnPoint + this.speed*this.direction[1];
 		}
 		if(this.willTurn == 0){
 			switch (pressed) {
@@ -169,8 +169,8 @@ public class Player extends Collider{
 			default:
 				break;
 			}
-		}else{
-			//Move player to where he can turn
+		}else {
+			this.move(walls, true);
 		}
 	}
 }
