@@ -5,14 +5,16 @@ public class Player extends Collider{
 	int direction[] = {0, 0};
 	int speed;
 	int willTurn; //0 no -1 left -2 right -3 up -4 down
+	Boolean canTurn;
 	public Player(int x, int y, int w, int h, int speed, Icon[] sprites) {
 		super(x, y, w, h);
 		this.sprites = sprites;
 		this.speed = speed;
+		this.canTurn = false;
 		this.willTurn = 0;
 	}
 	
-	public void move(Collider[] walls, Boolean canTurn){
+	public void move(Collider[] walls){
 		Boolean canMove = true;
 		for(int i = 0; i != walls.length; i++){
 			
@@ -44,6 +46,7 @@ public class Player extends Collider{
 		
 		if(canTurn && willTurn != 0){
 			System.out.println("daje");
+			canTurn = false;
 			switch (this.willTurn) {
 			case 1:
 				direction[0] = -1;
@@ -170,7 +173,7 @@ public class Player extends Collider{
 				break;
 			}
 		}else {
-			this.move(walls, true);
+			this.canTurn = true;
 		}
 	}
 }
