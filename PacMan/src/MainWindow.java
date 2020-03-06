@@ -19,9 +19,11 @@ import javax.swing.*;
 
 public class MainWindow extends JFrame{
 	Panel panel;
-	JLabel backgroundLabel;
 	JLabel playerImage;
+	JLabel enemyImage;
 	Player player;
+	Enemy enemy;
+	ArrayList<Wall> points = new ArrayList<>();
 	Collider walls[] = {
 			//External Walls
 			new Collider(0, 0, 13, 1) {}, //hor up
@@ -48,7 +50,7 @@ public class MainWindow extends JFrame{
 			new Collider(5, 7, 3, 1) {}, //vertical right 2
 	};
 	Icon playerSprites[] = {new ImageIcon(getClass().getResource("player.png"))};
-	Icon background = new ImageIcon(getClass().getResource("background.png"));
+	Icon enemySprites[] = {new ImageIcon(getClass().getResource("ghost.png"))};
 	
 	public MainWindow(){
 		super("Pac-Man");
@@ -58,14 +60,17 @@ public class MainWindow extends JFrame{
 		
 		addWalls();
 		
-		player = new Player(1, 11, 1, 1, 4, playerSprites);
+		player = new Player(1, 3, 1, 1, 4, playerSprites);
+		enemy = new Enemy(1, 1, 1, 1, 4, enemySprites);
 
-		backgroundLabel = new JLabel(background);
 		playerImage = new JLabel(player.sprites[0]);
+		enemyImage = new JLabel(enemy.sprites[0]);
 		
 		add(playerImage);
+		add(enemyImage);
 		
 		playerImage.setBounds(player.x, player.y, player.height, player.width);
+		enemyImage.setBounds(enemy.x, enemy.y, enemy.height, enemy.width);
 		gameCycle();
 		add(panel);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -83,6 +88,16 @@ public class MainWindow extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				player.move(walls);
 				playerImage.setBounds(player.x, player.y, player.height, player.width);
+				
+				if(player.isColliding(enemy) && playerImage.isVisible()){
+					
+					if(System.currentTimeMillis() - player.lastHitTime > player.invincibilityTime){
+						player.lastHitTime = System.currentTimeMillis();
+						player.lives--;
+						if(player.lives == 0)
+							playerImage.setVisible(false);
+					}
+				}
 			}
 		});
 		t.start();
@@ -137,29 +152,45 @@ public class MainWindow extends JFrame{
 		public void keyPressed(KeyEvent e){
 			switch (e.getKeyCode()) {
 				case KeyEvent.VK_LEFT:
-				if(pressed == 0){
-					pressed = 1;
-					player.checkAndMove(walls, pressed);
-				}
+					if(pressed == 0 && player.direction[0] != -1){
+						if(player.direction[0] == 1){
+							player.direction[0] = -1;
+						}else{
+							pressed = 1;
+							player.checkAndMove(walls, pressed);
+						}
+					}
 				break;
 				
 				case KeyEvent.VK_RIGHT:
-					if(pressed == 0){
-						pressed = 2;
-						player.checkAndMove(walls, pressed);
+					if(pressed == 0 && player.direction[0] != 1){
+						if(player.direction[0] == -1){
+							player.direction[0] = 1;
+						}else{
+							pressed = 2;
+							player.checkAndMove(walls, pressed);
+						}
 					}
 					break;
 					
 				case KeyEvent.VK_UP:
-					if(pressed == 0){
-						pressed = 3;
-						player.checkAndMove(walls, pressed);
+					if(pressed == 0 && player.direction[1] != -1){
+						if(player.direction[1] == 1){
+							player.direction[1] = -1;
+						}else{
+							pressed = 3;
+							player.checkAndMove(walls, pressed);
+						}
 					}
 					break;
 				case KeyEvent.VK_DOWN:
-					if(pressed == 0){
-						pressed = 4;
-						player.checkAndMove(walls, pressed);
+					if(pressed == 0 && player.direction[1] != 1){
+						if(player.direction[1] == -1){
+							player.direction[1] = 1;
+						}else{
+							pressed = 4;
+							player.checkAndMove(walls, pressed);
+						}
 					}
 					break;
 			}
