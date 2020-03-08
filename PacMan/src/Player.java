@@ -96,9 +96,9 @@ public class Player extends Collider{
 		
 		//If it goes outside the screen
 		if(this.x >= 750)
-			this.x = -35;
+			this.x = -52;
 		if(this.x < -55)
-			this.x = 701;
+			this.x = 720;
 		
 	}
 	

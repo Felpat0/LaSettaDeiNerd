@@ -11,18 +11,19 @@ import javax.swing.*;
 
 /*
  * TO-DO
- * - Fix direction changing  ----> Generalize code for all directions
- * - Add enemies
- * - Add health 
+ * - Fix enemies (tunnel)
+ * - Fix player (when pressing button too close to a wall)
+ * - Add healthbar
+ * - Add fruits where there are no walls
  */
 
 
 public class MainWindow extends JFrame{
 	Panel panel;
 	JLabel playerImage;
-	JLabel enemyImage;
+	JLabel[] enemyImage;
 	Player player;
-	Enemy enemy;
+	Enemy[] enemy;
 	ArrayList<Wall> points = new ArrayList<>();
 	Collider walls[] = {
 			//External Walls
@@ -61,16 +62,24 @@ public class MainWindow extends JFrame{
 		addWalls();
 		
 		player = new Player(1, 3, 1, 1, 4, playerSprites);
-		enemy = new Enemy(1, 1, 1, 1, 4, enemySprites);
+		enemy = new Enemy[3];
+		enemy[0] = new Enemy(5, 1, 1, 1, 4, enemySprites);
+		enemy[1] = new Enemy(6, 1, 1, 1, 4, enemySprites);
+		enemy[2] = new Enemy(7, 1, 1, 1, 4, enemySprites);
 
 		playerImage = new JLabel(player.sprites[0]);
-		enemyImage = new JLabel(enemy.sprites[0]);
+		enemyImage = new JLabel[3];
+		enemyImage[0] = new JLabel(enemy[0].sprites[0]);
+		enemyImage[1] = new JLabel(enemy[1].sprites[0]);
+		enemyImage[2] = new JLabel(enemy[2].sprites[0]);
 		
 		add(playerImage);
-		add(enemyImage);
+		for(int i = 0; i != enemy.length; i++){
+			add(enemyImage[i]);
+			enemyImage[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
+		}
 		
 		playerImage.setBounds(player.x, player.y, player.height, player.width);
-		enemyImage.setBounds(enemy.x, enemy.y, enemy.height, enemy.width);
 		gameCycle();
 		add(panel);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -89,15 +98,22 @@ public class MainWindow extends JFrame{
 				player.move(walls);
 				playerImage.setBounds(player.x, player.y, player.height, player.width);
 				
-				if(player.isColliding(enemy) && playerImage.isVisible()){
-					
-					if(System.currentTimeMillis() - player.lastHitTime > player.invincibilityTime){
-						player.lastHitTime = System.currentTimeMillis();
-						player.lives--;
-						if(player.lives == 0)
-							playerImage.setVisible(false);
+				for(int i = 0; i != enemy.length; i++){
+					enemy[i].move(walls);
+					enemyImage[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
+					if(player.isColliding(enemy[i]) && playerImage.isVisible()){
+						
+						if(System.currentTimeMillis() - player.lastHitTime > player.invincibilityTime){
+							player.lastHitTime = System.currentTimeMillis();
+							player.lives--;
+							if(player.lives == 0)
+								playerImage.setVisible(false);
+						}
 					}
 				}
+				
+				
+				
 			}
 		});
 		t.start();
