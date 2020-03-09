@@ -19,13 +19,19 @@ public class Enemy extends Collider{
 			this.direction[ThreadLocalRandom.current().nextInt(0, 2)] = ThreadLocalRandom.current().nextInt(0, 3) - 1;
 	}
 	
-	public void move(Collider[] walls){
+	public void move(Collider[] oldWalls){
+		Collider[] walls = new Collider[oldWalls.length + 2];
+		for(int i = 0; i != oldWalls.length; i++)
+			walls[i] = oldWalls[i];
+		walls[oldWalls.length] = new Collider(0, 6, 1, 1);
+		walls[oldWalls.length + 1] = new Collider(12, 6, 1, 1);
 		Boolean canMove = true;
 		canTurn = true;
 		turningDirection[0] = 1; //Left
 		turningDirection[1] = 1; //Right
 		turningDirection[2] = 1; //Up
 		turningDirection[3] = 1; //Down
+		
 		for(int i = 0; i != walls.length; i++){
 				//Predict if this will collide
 				if(new Collider(x + this.direction[0] * this.speed, y + this.direction[1] * this.speed, width, height, 1).isColliding(walls[i])){
@@ -80,34 +86,35 @@ public class Enemy extends Collider{
 		}
 		
 		if((this.direction[1] != 0 && (turningDirection[0] != 0 || turningDirection[1] != 0)) || (this.direction[0] != 0 && (turningDirection[2] != 0 || turningDirection[3] != 0))|| (this.direction[0] == this.direction[1] && canMove)){	
-				int ok = 0;
-				while(ok == 0){
+				Boolean ok = false;
+				while(!ok){
 					int rand = ThreadLocalRandom.current().nextInt(0, 4);
+					//System.out.println(rand + "    " + oldDirection[0] + "    " + turningDirection[0]);
 					switch (rand) {
 					case 0:
-						if(this.turningDirection[0] == 1){
-							ok = 1;
+						if(this.turningDirection[0] == 1 && oldDirection[0] != 1){
+							ok = true;
 							this.direction[0] = -1;
 							this.direction[1] = 0;
 						}
 						break;
 					case 1:
-						if(this.turningDirection[1] == 1){
-							ok = 1;
+						if(this.turningDirection[1] == 1 && oldDirection[0] != -1){
+							ok = true;
 							this.direction[0] = 1;
 							this.direction[1] = 0;
 						}
 						break;
 					case 2:
-						if(this.turningDirection[2] == 1){
-							ok = 1;
+						if(this.turningDirection[2] == 1 && oldDirection[1] != 1){
+							ok = true;
 							this.direction[1] = -1;
 							this.direction[0] = 0;
 						}
 						break;
 					case 3:
-						if(this.turningDirection[3] == 1){
-							ok = 1;
+						if(this.turningDirection[3] == 1 && oldDirection[1] != -1){
+							ok = true;
 							this.direction[1] = 1;
 							this.direction[0] = 0;
 						}
@@ -122,11 +129,5 @@ public class Enemy extends Collider{
 			this.x += this.direction[0] * speed;
 			this.y += this.direction[1] * speed;
 		}
-		
-		//If it goes outside the screen
-		if(this.x >= 733)
-			this.x = -24;
-		if(this.x < -25)
-			this.x = 720;
 	}
 }

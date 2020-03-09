@@ -5,6 +5,7 @@ public class Player extends Collider{
 	int direction[] = {0, 0};
 	int lives;
 	int speed;
+	int score;
 	long lastHitTime;
 	long invincibilityTime;
 	int willTurn; //0 no -1 left -2 right -3 up -4 down
@@ -16,6 +17,7 @@ public class Player extends Collider{
 		this.lives = 3;
 		this.lastHitTime = 0;
 		this.invincibilityTime = 1000;
+		this.score = 0;
 	}
 	
 	public void move(Collider[] walls){

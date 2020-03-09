@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -11,20 +12,26 @@ import javax.swing.*;
 
 /*
  * TO-DO
- * - Fix enemies (tunnel)
  * - Fix player (when pressing button too close to a wall)
- * - Add healthbar
- * - Add fruits where there are no walls
+ * - Fix collisions with enemies
+ * - Add animations
+ * - Add death screen
+ * - Add sounds
+ * - Make the code look BEEEEEEEEEEEAUTIFUL
+ * - Random map generation?
  */
 
 
 public class MainWindow extends JFrame{
+	public static int cellSize = 56;
 	Panel panel;
 	JLabel playerImage;
-	JLabel[] enemyImage;
+	JLabel[] enemyImages;
+	JLabel[] livesImage;
 	Player player;
 	Enemy[] enemy;
 	ArrayList<Wall> points = new ArrayList<>();
+	int map[][];
 	Collider walls[] = {
 			//External Walls
 			new Collider(0, 0, 13, 1) {}, //hor up
@@ -50,16 +57,20 @@ public class MainWindow extends JFrame{
 			new Collider(9, 9, 2, 2) {}, //vertical right 2
 			new Collider(5, 7, 3, 1) {}, //vertical right 2
 	};
+	Collider fruits[];
 	Icon playerSprites[] = {new ImageIcon(getClass().getResource("player.png"))};
 	Icon enemySprites[] = {new ImageIcon(getClass().getResource("ghost.png"))};
 	
 	public MainWindow(){
 		super("Pac-Man");
 		//Game size: 728x728
-		setSize(728+6, 728+29);
+		setSize(728+6, 728+29+70);
 		panel = new Panel();
+		map = new int[13][13];
+		fruits = new Collider[79];
 		
 		addWalls();
+		addFruits();
 		
 		player = new Player(1, 3, 1, 1, 4, playerSprites);
 		enemy = new Enemy[3];
@@ -68,15 +79,24 @@ public class MainWindow extends JFrame{
 		enemy[2] = new Enemy(7, 1, 1, 1, 4, enemySprites);
 
 		playerImage = new JLabel(player.sprites[0]);
-		enemyImage = new JLabel[3];
-		enemyImage[0] = new JLabel(enemy[0].sprites[0]);
-		enemyImage[1] = new JLabel(enemy[1].sprites[0]);
-		enemyImage[2] = new JLabel(enemy[2].sprites[0]);
+		enemyImages = new JLabel[3];
+		livesImage = new JLabel[3];
+		for(int i = 0; i != 3; i++){
+			enemyImages[i] = new JLabel(enemy[0].sprites[0]);
+			enemyImages[i] = new JLabel(enemy[1].sprites[0]);
+			enemyImages[i] = new JLabel(enemy[2].sprites[0]);
+			livesImage[i] = new JLabel(player.sprites[0]);
+		}
+		
 		
 		add(playerImage);
+		
+		//Add enemy's and live's images
 		for(int i = 0; i != enemy.length; i++){
-			add(enemyImage[i]);
-			enemyImage[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
+			add(enemyImages[i]);
+			enemyImages[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
+			add(livesImage[i]);
+			livesImage[i].setBounds(10 + i*cellSize, 737, player.height, player.width);
 		}
 		
 		playerImage.setBounds(player.x, player.y, player.height, player.width);
@@ -100,31 +120,80 @@ public class MainWindow extends JFrame{
 				
 				for(int i = 0; i != enemy.length; i++){
 					enemy[i].move(walls);
-					enemyImage[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
+					enemyImages[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
 					if(player.isColliding(enemy[i]) && playerImage.isVisible()){
 						
 						if(System.currentTimeMillis() - player.lastHitTime > player.invincibilityTime){
 							player.lastHitTime = System.currentTimeMillis();
 							player.lives--;
+							
 							if(player.lives == 0)
 								playerImage.setVisible(false);
 						}
 					}
 				}
 				
+				for(int i = 0; i != fruits.length; i++){
+					if(player.isColliding(fruits[i]) && panel.paintedFruits.get(i).isVisible){
+						panel.paintedFruits.get(i).isVisible = false;
+						player.score ++;
+						panel.repaint();
+					}
+				}
 				
+				//Animations
+				long temp = System.currentTimeMillis() - player.lastHitTime;
+				if((temp <= 200 || (temp >= 400 && temp <= 600) || (temp >= 800 && temp <= 1000))){
+					playerImage.setVisible(false);
+				}else if(player.lives > 0){
+					playerImage.setVisible(true);
+				}
+				
+				
+				switch (player.lives) {
+				case 1:
+					livesImage[1].setVisible(false);
+					break;
+				case 2:
+					livesImage[2].setVisible(false);
+					break;
+				default:
+					break;
+				}
 				
 			}
 		});
 		t.start();
 	}
 	
-	public void addWalls(){
+	private void addFruits(){
+		int n = 0;
+		for(int i = 0; i != 13; i++){
+			for(int j = 0; j != 13; j++){
+				if(map[i][j] != 1){
+					panel.paintedFruits.add(new Fruit(new Double((j*cellSize) + cellSize/2), new Double((i*cellSize + cellSize/2)), 2.0, 2.0));
+					fruits[n] = new Collider((j*cellSize) + cellSize/2, (i*cellSize + cellSize/2), 2, 2, 1);
+					n++;
+				}
+			}
+		}
+	}
+	
+	private void addWalls(){
 		int i = -1;
 		do{
 			i++;
+			//Build walls matrix
 			panel.paintedWalls.add(new Wall(walls[i].x, walls[i].y, walls[i].width-1, walls[i].height-1));
+			for(int k = 0; k != (walls[i].height/cellSize); k++){
+				for(int j = 0; j != (walls[i].width/cellSize); j++){
+					map[k + walls[i].y/cellSize][j + walls[i].x/cellSize] = 1;
+				}
+			}
 		}while(i != walls.length-1);
+		
+		
+			
 	}
 	
 
@@ -132,9 +201,11 @@ public class MainWindow extends JFrame{
 	public class Panel extends JPanel{
 		Graphics g;
 		ArrayList<Wall> paintedWalls = new ArrayList<>();
-		ArrayList<Wall> points = new ArrayList<>();
+		ArrayList<Fruit> paintedFruits = new ArrayList<>();
+		Font font;
 		public Panel(){
 			setBackground(Color.BLACK);
+			//this.font = new Font("TimesRoman", Font.PLAIN, 20);
 		}
 		public void paintComponent(Graphics g){
 			super.paintComponent(g);
@@ -150,16 +221,20 @@ public class MainWindow extends JFrame{
 				}while(i != paintedWalls.size() - 1);
 			}
 			
-			g2.setPaint(Color.BLACK);
-			
-			if(points.size() > 0){
+			g2.setPaint(Color.YELLOW);
+			if(paintedFruits.size() > 0){
 				int i = -1;
 				do{
 					i++;
-					g2.fill(points.get(i));
-					g2.draw(points.get(i));
-				}while(i != points.size() - 1);
+					if(paintedFruits.get(i).isVisible){
+						g2.fill(paintedFruits.get(i));
+						g2.draw(paintedFruits.get(i));
+					}
+				}while(i != paintedFruits.size() - 1);
 			}
+			g2.setFont(g2.getFont().deriveFont(30f)); 
+			g2.drawString("Score: " + player.score, 580, 775);
+			
 		}
 	}
 	
