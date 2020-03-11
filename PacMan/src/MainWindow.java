@@ -1,5 +1,6 @@
 import java.awt.Color;import java.awt.Component;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -12,9 +13,8 @@ import javax.swing.*;
 
 /*
  * TO-DO
- * - Add animations
+ * - Add animations -> Insert them into a class -> (animation handler in another thread?)
  * - Add death screen
- * - Add sounds
  * - Make the code look BEEEEEEEEEEEAUTIFUL
  * - Fix enemies movement
  * - Random map generation?
@@ -23,11 +23,16 @@ import javax.swing.*;
  * WHAT I LEARNED
  * - Loading a font takes so much time
  * - Rotating a JLabel requires overriding this paintComponent
+ * - Audio sux -> Use AudioPlayer.java (other methods were problematic after compiling in jar)
  */
 
 
 public class MainWindow extends JFrame{
 	public static int cellSize = 56;
+	Timer t;
+	AudioPlayer audioPlayer = new AudioPlayer();
+	AudioPlayer audioPlayer2 = new AudioPlayer();
+	long startTime = System.currentTimeMillis();
 	Panel panel;
 	AnimatedJLabel playerImage;
 	JLabel[] enemyImages;
@@ -62,7 +67,9 @@ public class MainWindow extends JFrame{
 			new Collider(5, 7, 3, 1) {}, //vertical right 2
 	};
 	Collider fruits[];
-	final Icon playerSprites[] = {new ImageIcon(getClass().getResource("player.png"))};
+	final Icon playerSprites[] = {new ImageIcon(getClass().getResource("player.png")),
+								  new ImageIcon(getClass().getResource("player1.png")),
+								  new ImageIcon(getClass().getResource("player2.png"))};
 	final Icon enemySprites[] = {new ImageIcon(getClass().getResource("ghost.png"))};
 	
 	public MainWindow(){
@@ -115,55 +122,95 @@ public class MainWindow extends JFrame{
 	}
 	
 	public void gameCycle(){
-		Timer t = new Timer(30, new ActionListener() {
+		audioPlayer.playAudio("intro.wav", false);
+		audioPlayer2.playAudio("intro.wav", false);
+		
+		t = new Timer(30, new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				player.move(walls);
-				playerImage.setBounds(player.x, player.y, player.height, player.width);
-				
-				for(int i = 0; i != enemy.length; i++){
-					enemy[i].move(walls);
-					enemyImages[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
-					if(player.isColliding(enemy[i], false)){
-						if(System.currentTimeMillis() - player.lastHitTime > player.invincibilityTime){
-							player.lastHitTime = System.currentTimeMillis();
-							player.lives--;
-							
-							if(player.lives == 0)
-								playerImage.setVisible(false);
+				if(!audioPlayer.clip.isRunning()){
+					player.move(walls);
+					playerImage.setBounds(player.x, player.y, player.height, player.width);
+					
+					for(int i = 0; i != enemy.length; i++){
+						enemy[i].move(walls);
+						enemyImages[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
+						if(player.isColliding(enemy[i], false)){
+							if(System.currentTimeMillis() - player.lastHitTime > player.invincibilityTime){
+								player.lastHitTime = System.currentTimeMillis();
+								player.lives--;
+							}
 						}
 					}
-				}
-				
-				for(int i = 0; i != fruits.length; i++){
-					if(player.isColliding(fruits[i]) && panel.paintedFruits.get(i).isVisible){
-						panel.paintedFruits.get(i).isVisible = false;
-						player.score ++;
+					
+					if(player.lives == 0){
 						panel.repaint();
+						audioPlayer2.clip.stop();
+						audioPlayer.clip.stop();
+						audioPlayer.playAudio("dying.wav", false);
+						((Timer)e.getSource()).stop();
 					}
+					
+					if(player.score == fruits.length){
+						audioPlayer2.clip.stop();
+						audioPlayer.clip.stop();
+						for(int i = 0; i != enemy.length; i++){
+							enemyImages[i].setVisible(false);
+							if(i != 3)
+								livesImage[i].setVisible(false);
+						}
+						((Timer)e.getSource()).stop();
+					}
+					
+					for(int i = 0; i != fruits.length; i++){
+						if(player.isColliding(fruits[i]) && panel.paintedFruits.get(i).isVisible){
+							panel.paintedFruits.get(i).isVisible = false;
+							player.score ++;
+							panel.repaint();
+						}
+					}
+					
+					//Animations
+					long temp = System.currentTimeMillis() - player.lastHitTime;
+					if((temp <= 200 || (temp >= 400 && temp <= 600) || (temp >= 800 && temp <= 1000))){
+						playerImage.setVisible(false);
+					}else if(player.lives > 0){
+						playerImage.setVisible(true);
+					}
+					
+					if(player.direction[0] != player.direction[1]){
+						//Chomp sound
+						if(audioPlayer2.clip != null && !audioPlayer2.clip.isRunning() && player.lives > 0 && player.score < fruits.length){
+							audioPlayer2.playAudio("chomp.wav", true);
+						}
+						long temp2 = System.currentTimeMillis() - startTime;
+						if(temp2 <= 100){
+							playerImage.setIcon(playerSprites[0]);
+						}else if(player.lives > 0 && temp2 > 100){
+								playerImage.setIcon(playerSprites[1]);
+								if(temp2 > 200)
+									startTime = System.currentTimeMillis();
+						}
+					}else{
+						if(audioPlayer2.clip != null)
+							audioPlayer2.clip.stop();
+						playerImage.setIcon(player.sprites[2]);
+					}
+					
+					
+					switch (player.lives) {
+					case 1:
+						livesImage[1].setVisible(false);
+						break;
+					case 2:
+						livesImage[2].setVisible(false);
+						break;
+					default:
+						break;
+					}
+					
 				}
-				
-				//Animations
-				long temp = System.currentTimeMillis() - player.lastHitTime;
-				if((temp <= 200 || (temp >= 400 && temp <= 600) || (temp >= 800 && temp <= 1000))){
-					playerImage.setVisible(false);
-				}else if(player.lives > 0){
-					playerImage.setVisible(true);
-				}
-				
-				
-				switch (player.lives) {
-				case 1:
-					livesImage[1].setVisible(false);
-					break;
-				case 2:
-					livesImage[2].setVisible(false);
-					break;
-				default:
-					break;
-				}
-				
 			}
 		});
 		t.start();
@@ -220,39 +267,57 @@ public class MainWindow extends JFrame{
 	public class Panel extends JPanel{
 		ArrayList<Wall> paintedWalls = new ArrayList<>();
 		ArrayList<Fruit> paintedFruits = new ArrayList<>();
-		Font font;
 		public Panel(){
 			setBackground(Color.BLACK);
-			//this.font = new Font("TimesRoman", Font.PLAIN, 20);
 		}
 		public void paintComponent(Graphics g){
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D)g;
-			g2.setPaint(Color.BLUE);
+		    FontMetrics metrics;
 			
-			if(paintedWalls.size() > 0){
-				int i = -1;
-				do{
-					i++;
-					g2.fill(paintedWalls.get(i));
-					g2.draw(paintedWalls.get(i));
-				}while(i != paintedWalls.size() - 1);
+			if(player.score == fruits.length){
+				g2.setFont(g2.getFont().deriveFont(50f)); 
+				metrics = g.getFontMetrics(g2.getFont());
+				g2.setPaint(Color.YELLOW);
+				g2.drawString("YOU WON!", (this.getWidth() - metrics.stringWidth("YOU WON!"))/2,
+										  (this.getHeight() - metrics.getHeight())/2);
+				g2.setFont(g2.getFont().deriveFont(20f)); 
+				metrics = g.getFontMetrics(g2.getFont());
+				g2.drawString("Press space to play again", (this.getWidth() - metrics.stringWidth("Press space to play again"))/2,
+						  (this.getHeight() - metrics.getHeight())/2 + 70);
+			}else{
+				if(player.lives == 0){
+					g2.setFont(g2.getFont().deriveFont(50f)); 
+					metrics = g.getFontMetrics(g2.getFont());
+					g2.setPaint(Color.YELLOW);
+					g2.drawString("Press space to play again", (this.getWidth() - metrics.stringWidth("Press space to play again"))/2,
+							  (this.getHeight() - metrics.getHeight())/2 + 70);
+				}
+				g2.setPaint(Color.BLUE);
+				
+				if(paintedWalls.size() > 0 && player.lives != 0){
+					int i = -1;
+					do{
+						i++;
+						g2.fill(paintedWalls.get(i));
+						g2.draw(paintedWalls.get(i));
+					}while(i != paintedWalls.size() - 1);
+				}
+				
+				g2.setPaint(Color.YELLOW);
+				if(paintedFruits.size() > 0){
+					int i = -1;
+					do{
+						i++;
+						if(paintedFruits.get(i).isVisible){
+							g2.fill(paintedFruits.get(i));
+							g2.draw(paintedFruits.get(i));
+						}
+					}while(i != paintedFruits.size() - 1);
+				}
+				g2.setFont(g2.getFont().deriveFont(30f)); 
+				g2.drawString("Score: " + player.score, 580, 775);
 			}
-			
-			g2.setPaint(Color.YELLOW);
-			if(paintedFruits.size() > 0){
-				int i = -1;
-				do{
-					i++;
-					if(paintedFruits.get(i).isVisible){
-						g2.fill(paintedFruits.get(i));
-						g2.draw(paintedFruits.get(i));
-					}
-				}while(i != paintedFruits.size() - 1);
-			}
-			g2.setFont(g2.getFont().deriveFont(30f)); 
-			g2.drawString("Score: " + player.score, 580, 775);
-			
 		}
 	}
 	
@@ -302,7 +367,16 @@ public class MainWindow extends JFrame{
 						}
 					}
 					break;
+				case KeyEvent.VK_SPACE:
+					if(player.lives == 0 || player.score == fruits.length){
+						JFrame temp = (JFrame)e.getSource();
+						temp.dispose();
+						new MainWindow();
+					}
+					break;
 			}
+			
+			
 		}
 		
 		public void keyReleased(KeyEvent e){
