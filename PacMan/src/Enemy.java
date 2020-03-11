@@ -34,7 +34,7 @@ public class Enemy extends Collider{
 		
 		for(int i = 0; i != walls.length; i++){
 				//Predict if this will collide
-				if(new Collider(x + this.direction[0] * this.speed, y + this.direction[1] * this.speed, width, height, 1).isColliding(walls[i])){
+				if(new Collider(x + this.direction[0] * this.speed, y + this.direction[1] * this.speed, width, height, false).isColliding(walls[i])){
 					
 					if(this.x == walls[i].x - this.width || this.x == walls[i].x + walls[i].width || this.y == walls[i].y - this.height || this.y == walls[i].y + walls[i].height){
 						//No need to change Player coordinates because he is standing(for fixing bug)
@@ -59,11 +59,11 @@ public class Enemy extends Collider{
 					else
 						this.turningDirection[0] = 0;
 					
-					if(new Collider(this.x + 1, this.y + 2, width-2, height-2, 1).isColliding(walls[i])){
+					if(new Collider(this.x + 1, this.y + 2, width-2, height-2, false).isColliding(walls[i])){
 						turningDirection[3] = 0;
 					}
 					
-					if(new Collider(this.x + 1, this.y - 2, width-2, height-2, 1).isColliding(walls[i])){
+					if(new Collider(this.x + 1, this.y - 2, width-2, height-2, false).isColliding(walls[i])){
 						turningDirection[2] = 0;
 					}
 					
@@ -74,10 +74,10 @@ public class Enemy extends Collider{
 					else
 						this.turningDirection[2] = 0;
 					
-					if(new Collider(this.x + 2, this.y + 1, width-2, height-2, 1).isColliding(walls[i])){
+					if(new Collider(this.x + 2, this.y + 1, width-2, height-2, false).isColliding(walls[i])){
 						turningDirection[1] = 0;
 					}
-					if(new Collider(this.x - 2, this.y + 1, width-2, height-2, 1).isColliding(walls[i])){
+					if(new Collider(this.x - 2, this.y + 1, width-2, height-2, false).isColliding(walls[i])){
 						turningDirection[0] = 0;
 					}
 				

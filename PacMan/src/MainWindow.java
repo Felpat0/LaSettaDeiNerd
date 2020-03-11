@@ -1,4 +1,4 @@
-import java.awt.Color;
+import java.awt.Color;import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,20 +12,24 @@ import javax.swing.*;
 
 /*
  * TO-DO
- * - Fix player (when pressing button too close to a wall)
- * - Fix collisions with enemies
  * - Add animations
  * - Add death screen
  * - Add sounds
  * - Make the code look BEEEEEEEEEEEAUTIFUL
+ * - Fix enemies movement
  * - Random map generation?
+ * 
+ * 
+ * WHAT I LEARNED
+ * - Loading a font takes so much time
+ * - Rotating a JLabel requires overriding this paintComponent
  */
 
 
 public class MainWindow extends JFrame{
 	public static int cellSize = 56;
 	Panel panel;
-	JLabel playerImage;
+	AnimatedJLabel playerImage;
 	JLabel[] enemyImages;
 	JLabel[] livesImage;
 	Player player;
@@ -58,8 +62,8 @@ public class MainWindow extends JFrame{
 			new Collider(5, 7, 3, 1) {}, //vertical right 2
 	};
 	Collider fruits[];
-	Icon playerSprites[] = {new ImageIcon(getClass().getResource("player.png"))};
-	Icon enemySprites[] = {new ImageIcon(getClass().getResource("ghost.png"))};
+	final Icon playerSprites[] = {new ImageIcon(getClass().getResource("player.png"))};
+	final Icon enemySprites[] = {new ImageIcon(getClass().getResource("ghost.png"))};
 	
 	public MainWindow(){
 		super("Pac-Man");
@@ -78,7 +82,7 @@ public class MainWindow extends JFrame{
 		enemy[1] = new Enemy(6, 1, 1, 1, 4, enemySprites);
 		enemy[2] = new Enemy(7, 1, 1, 1, 4, enemySprites);
 
-		playerImage = new JLabel(player.sprites[0]);
+		playerImage = new AnimatedJLabel();
 		enemyImages = new JLabel[3];
 		livesImage = new JLabel[3];
 		for(int i = 0; i != 3; i++){
@@ -121,8 +125,7 @@ public class MainWindow extends JFrame{
 				for(int i = 0; i != enemy.length; i++){
 					enemy[i].move(walls);
 					enemyImages[i].setBounds(enemy[i].x, enemy[i].y, enemy[i].height, enemy[i].width);
-					if(player.isColliding(enemy[i]) && playerImage.isVisible()){
-						
+					if(player.isColliding(enemy[i], false)){
 						if(System.currentTimeMillis() - player.lastHitTime > player.invincibilityTime){
 							player.lastHitTime = System.currentTimeMillis();
 							player.lives--;
@@ -172,7 +175,7 @@ public class MainWindow extends JFrame{
 			for(int j = 0; j != 13; j++){
 				if(map[i][j] != 1){
 					panel.paintedFruits.add(new Fruit(new Double((j*cellSize) + cellSize/2), new Double((i*cellSize + cellSize/2)), 2.0, 2.0));
-					fruits[n] = new Collider((j*cellSize) + cellSize/2, (i*cellSize + cellSize/2), 2, 2, 1);
+					fruits[n] = new Collider((j*cellSize) + cellSize/2, (i*cellSize + cellSize/2), 2, 2, false);
 					n++;
 				}
 			}
@@ -197,9 +200,24 @@ public class MainWindow extends JFrame{
 	}
 	
 
+	public class AnimatedJLabel extends JLabel{
+		public AnimatedJLabel(){
+			super(playerSprites[0]);
+		}
+		
+		public void paintComponent(Graphics g){
+			Graphics2D g2 = (Graphics2D)g;
+			if(player.direction[0] == -1)
+				g2.rotate(Math.PI, getWidth()/2, getHeight()/2);
+			else if(player.direction[1] == -1)
+				g2.rotate(3*Math.PI/2, getWidth()/2, getHeight()/2);
+			else if(player.direction[1] == 1)
+				g2.rotate(Math.PI/2, getWidth()/2, getHeight()/2);
+			super.paintComponent(g);
+		}
+	}
 	
 	public class Panel extends JPanel{
-		Graphics g;
 		ArrayList<Wall> paintedWalls = new ArrayList<>();
 		ArrayList<Fruit> paintedFruits = new ArrayList<>();
 		Font font;

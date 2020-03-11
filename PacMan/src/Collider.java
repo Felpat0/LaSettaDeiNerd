@@ -16,7 +16,7 @@ public class Collider {
 		this.y = (y * 56);
 	}
 	
-	public Collider(int x, int y, int w, int h, int t){
+	public Collider(int x, int y, int w, int h, Boolean t){
 		width = w;
 		height = h;
 		this.x = x;
@@ -32,8 +32,19 @@ public class Collider {
 				return true;
 			}
 		}
-		
-		
+		return false;
+	}
+	
+	//Collision without including borders (only when colliders intersect)
+	Boolean isColliding(Collider c, Boolean b){
+		Collider a = new Collider(c.x+1, c.y+1, c.width-2, c.height-2, false);
+		//First check if x coordinates match
+		if((a.x <= this.x + this.width && a.x >= this.x || a.x + a.width <= this.x + this.width && a.x + a.width >= this.x) || (this.x <= a.x + a.width && this.x >= a.x || this.x + this.width <= a.x + a.width && this.x + this.width >= a.x)){
+			//Then if y coordinates match
+			if((a.y <= this.y + this.height && a.y >= this.y || a.y + a.height <= this.y + this.height && a.y + a.height >= this.y) || (this.y <= a.y + a.height && this.y >= a.y || this.y + this.height <= a.y + a.height && this.y + this.height >= a.y)){
+				return true;
+			}
+		}
 		return false;
 	}
 	

@@ -26,7 +26,7 @@ public class Player extends Collider{
 		for(int i = 0; i != walls.length; i++){
 			
 			//Predict if this will collide
-			if(new Collider(x + this.direction[0] * this.speed, y + this.direction[1] * this.speed, width, height, 1).isColliding(walls[i])){
+			if(new Collider(x + this.direction[0] * this.speed, y + this.direction[1] * this.speed, width, height, false).isColliding(walls[i])){
 				
 				if(this.x == walls[i].x - this.width || this.x == walls[i].x + walls[i].width || this.y == walls[i].y - this.height || this.y == walls[i].y + walls[i].height){
 					//No need to change Player coordinates because he is standing(for fixing bug)
@@ -53,13 +53,13 @@ public class Player extends Collider{
 				nextDir = 1;
 			//Actual horizontal
 			if(this.direction[0] != 0){
-				if(new Collider(this.x + 1, this.y + 2*nextDir, width-2, height-2, 1).isColliding(walls[i]) && willTurn != 0){
+				if(new Collider(this.x + 1, this.y + 2*nextDir, width-2, height-2, false).isColliding(walls[i]) && willTurn != 0){
 					canTurn = false;
 				}
 			}
 			//Actual vertical
 			else if(direction[1] != 0){
-				if(new Collider(this.x + 2*nextDir, this.y + 1, width-2, height-2, 1).isColliding(walls[i]) && willTurn != 0){
+				if(new Collider(this.x + 2*nextDir, this.y + 1, width-2, height-2, false).isColliding(walls[i]) && willTurn != 0){
 					canTurn = false;
 				}
 			}
@@ -135,7 +135,7 @@ public class Player extends Collider{
 								this.x + (this.width/2) + ((this.width/2)*this.direction[0]) + (n*this.direction[0]), 
 								this.y + (this.height/2) + ((this.height/2)*tempDir1)+ (c*tempDir1),
 								0,
-								0, 1);
+								0, false);
 					}else{
 						n = 5;
 						c = j;
@@ -143,7 +143,7 @@ public class Player extends Collider{
 								this.x + (this.width/2) + ((this.width/2)*tempDir0)+ (n*tempDir0), 
 								this.y + (this.height/2) + ((this.height/2)*this.direction[1])+ (c*this.direction[1]),
 								1,
-								1, 1);
+								1, false);
 					}
 					
 					if(temp.isColliding(walls[i])){
@@ -155,6 +155,8 @@ public class Player extends Collider{
 					turnPoint = j;
 				}
 			}
+		}else{
+			willTurn = 0;
 		}
 		
 		//If player has not to turn change his direction
